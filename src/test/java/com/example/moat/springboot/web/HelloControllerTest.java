@@ -1,9 +1,14 @@
 package com.example.moat.springboot.web;
 
+import com.example.moat.springboot.config.auth.SecurityConfig;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.FilterType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -14,12 +19,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)        //테스트를 진행할 때 JUnit에 내장된 실행자 외에 다른 실행자를 실행시킨다. SpringRunner를 실행시킴
-@WebMvcTest(controllers = HelloController.class) //Web에 집중할 수 잇는 어노테이션. @Controller, @ControllerAdvice 등은 사용 못 함
+@WebMvcTest(controllers = HelloController.class,
+        excludeFilters = {
+        @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, classes = SecurityConfig.class)
+        }) //Web에 집중할 수 잇는 어노테이션. @Controller, @ControllerAdvice 등은 사용 못 함
 public class HelloControllerTest {
 
     @Autowired          //스프링이 관리하는 빈을 주입받음
     private MockMvc mvc;        //웹 API(HTTP GET, POST) 시험할때 사용
 
+    @WithMockUser(roles = "USER")
     @Test
     public void hello가_리턴된다() throws Exception{
         String hello = "hello";
@@ -29,6 +38,7 @@ public class HelloControllerTest {
                 .andExpect(content().string(hello));    //응답 본문의 내용을 검증한다. 컨트롤러에서는 "hello"를 리턴하도록 했는데 맞는지 확인한다.
     }
 
+    @WithMockUser(roles = "USER")
     @Test
     public void helloDto가_리턴된다() throws Exception{
         String name = "hello";
